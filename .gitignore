@@ -1,0 +1,10 @@
+__pycache__/
+.coverage
+.venv/
+.env
+.claude/
+.vscode/
+.idea/
+*.pyc
+.pytest_cache/
+/.local

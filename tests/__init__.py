@@ -1,0 +1,1 @@
+"""Test package for SonarCloud-GitHub sync tool."""
