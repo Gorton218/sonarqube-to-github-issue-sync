@@ -111,6 +111,59 @@ sonarcloud-github-sync \
 - `--log-level`: Set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) - default: INFO
 - `--help`: Show help message
 
+## Reusable GitHub Workflow
+
+You can run the sync from other repositories via a reusable workflow hosted in this repo.
+
+### Workflow Interface
+
+- Inputs:
+   - `sonar_project` (required): SonarCloud project key, e.g. `my-org_my-project`
+   - `issue_types` (optional): `BUG,VULNERABILITY,CODE_SMELL` by default
+   - `dry_run` (optional): `false` by default
+   - `log_level` (optional): `INFO` by default
+   - `debug` (optional): `false` by default
+- Secrets:
+   - `SONAR_TOKEN` (required)
+   - `GITHUB_TOKEN` (required; can use `${{ secrets.GITHUB_TOKEN }}` if permissions allow)
+- Permissions (required on the calling job):
+   - `contents: read` (for checkout)
+   - `issues: write` (create/close issues)
+   - `metadata: read` (repo access)
+
+The GitHub repository is auto-discovered from the calling context using `GITHUB_REPOSITORY`, so no `github_repo` input is needed.
+
+### Example Usage From Another Repo
+
+```yaml
+name: SonarCloud Sync
+
+on:
+   workflow_dispatch:
+
+jobs:
+   sonarcloud_sync:
+      uses: <owner>/<repo>/.github/workflows/sonarcloud-sync.yml@v1
+      permissions:
+         contents: read
+         issues: write
+         metadata: read
+      with:
+         sonar_project: my-org_my-project
+         issue_types: BUG,VULNERABILITY,CODE_SMELL
+         dry_run: false
+         log_level: INFO
+         debug: false
+      secrets:
+         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+Notes:
+- Replace `<owner>/<repo>` with this repository path and a tagged ref like `@v1`.
+- If you use the built-in `secrets.GITHUB_TOKEN`, grant the job `issues: write` permission.
+- The workflow installs the tool directly from this repo/tag and invokes the CLI.
+
 ### Debug and Logging Options
 
 For troubleshooting and detailed operation tracking:
