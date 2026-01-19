@@ -35,11 +35,11 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Checkout sonarcloud-sync repository
-      uses: actions/checkout@v4
-      with:
-        repository: Gorton218/sonarqube-to-github-issue-sync
-        path: sonarcloud-sync-tool
+    # - name: Checkout sonarcloud-sync repository
+    #   uses: actions/checkout@v4
+    #   with:
+    #     repository: Gorton218/sonarqube-to-github-issue-sync
+    #     path: sonarcloud-sync-tool
 
     - name: Setup Python
       uses: actions/setup-python@v5
