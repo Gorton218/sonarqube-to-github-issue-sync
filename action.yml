@@ -1,5 +1,5 @@
 name: "SonarCloud ↔ GitHub Sync"
-description: "Synchronize issues bidirectionally between SonarCloud and GitHub"
+description: "Synchronize issues bidirectionally between SonarCloud and GitHub. Requires 'issues: write' permission in your workflow job."
 author: "Gorton218"
 
 inputs:
@@ -30,7 +30,7 @@ inputs:
     description: "SonarCloud token for authentication"
     required: true
   github_token:
-    description: "GitHub token for authentication"
+    description: "GitHub token for authentication. The workflow must have 'issues: write' permission to create and close issues."
     required: false
     default: "${{ github.token }}"
 
