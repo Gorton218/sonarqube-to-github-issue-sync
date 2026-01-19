@@ -128,19 +128,27 @@ You can run the sync from other repositories using this GitHub Action.
 
 ### Action Secrets
 
-Composite actions don't support a dedicated `secrets` input. Instead, pass secrets via environment variables:
+Composite actions pass secrets via environment variables. The action supports two approaches:
 
-| Environment Variable | Required | Description |
-|----------------------|----------|-------------|
-| `SONAR_TOKEN` | yes | SonarCloud personal access token |
-| `GITHUB_TOKEN` | no | GitHub token with `issues:write` permission; defaults to `${{ github.token }}` if not provided |
+**Recommended: Workflow Permissions (no explicit secret needed)**
+- The action automatically uses `github.token` with workflow permissions
+- Simply grant `permissions: { issues: write }` in the calling job
 
-### Example Usage From Another Repository
+**Alternative: Explicit GitHub Token**
+- Pass `GITHUB_TOKEN` via env if you need a custom token (PAT, bot token, etc.)
+- Useful for cross-repo access or elevated permissions
+
+| Environment Variable | Required | Default | Description |
+|----------------------|----------|---------|-------------|
+| `SONAR_TOKEN` | yes | — | SonarCloud personal access token |
+| `GITHUB_TOKEN` | no | `github.token` | GitHub token with `issues:write` permission; defaults to workflow token |
+
+### Example Usage: With Workflow Permissions (Recommended)
 
 ```yaml
 name: SonarCloud Sync
 
-on:
+on:s
   workflow_dispatch:
 
 jobs:
@@ -153,13 +161,23 @@ jobs:
       - uses: Gorton218/sonarqube-to-github-issue-sync@main
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           sonar_project: my-org_my-project
           issue_types: BUG,VULNERABILITY,CODE_SMELL
           dry_run: false
           log_level: INFO
           debug: false
+```
+
+### Example Usage: With Custom GitHub Token
+
+```yaml
+- uses: Gorton218/sonarqube-to-github-issue-sync@main
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+  with:
+    sonar_project: my-org_my-project
 ```
 
 Notes:
