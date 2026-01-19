@@ -60,8 +60,8 @@ jobs:
       - name: Checkout sync tool repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.resolve.outputs.repository }}
-          ref: ${{ steps.resolve.outputs.ref }}
+          repository: ${{ github.action_repository }}
+          ref: ${{ github.action_ref }}
           path: sync-tool
 
       - name: Setup Python
