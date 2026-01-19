@@ -67,7 +67,7 @@ runs:
       shell: bash
       env:
         SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-        # GITHUB_TOKEN: ${{ env.GITHUB_TOKEN || github.token }}
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN || github.token }}
       run: |
         CMD=(sonarcloud-github-sync \
           --sonar-project "${{ inputs.sonar_project }}" \
