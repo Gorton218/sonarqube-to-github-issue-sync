@@ -103,9 +103,9 @@ class SyncEngine:
                     self.logger.info(f"[{idx}/{total_issues}] Failed to create GitHub issue for {sonar_issue.key}: {e}")
         
         # Check for SonarCloud issues that are now resolved and close corresponding GitHub issues
-        self.logger.debug("Checking for resolved SonarCloud issues to close corresponding GitHub issues")
+        self.logger.info("Checking for resolved SonarCloud issues to close corresponding GitHub issues")
         github_issues = self.github_client.get_issues_with_label(self.config.github_repo, "sonarcloud")
-        self.logger.debug(f"Found {len(github_issues)} GitHub issues with 'sonarcloud' label")
+        self.logger.info(f"Found {len(github_issues)} GitHub issues with 'sonarcloud' label")
         
         total_github_issues = len(github_issues)
         for idx, github_issue in enumerate(github_issues, start=1):
