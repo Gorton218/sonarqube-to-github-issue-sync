@@ -31,9 +31,9 @@ on:
       SONAR_TOKEN:
         description: "SonarCloud personal access token"
         required: true
-      GITHUB_TOKEN:
-        description: "GitHub token (PAT or Actions token with issues:write)"
-        required: true
+    #   GITHUB_TOKEN:
+    #     description: "GitHub token (PAT or Actions token with issues:write)"
+    #     required: true
 
 jobs:
   sync:
@@ -73,7 +73,7 @@ jobs:
       - name: Run sync
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
