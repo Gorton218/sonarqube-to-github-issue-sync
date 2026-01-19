@@ -54,6 +54,8 @@ jobs:
           # Trim refs/heads/ or refs/tags/
           CLEAN_REF="${REF_PART#refs/heads/}"
           CLEAN_REF="${CLEAN_REF#refs/tags/}"
+          echo "WORKFLOW_REF=$WORKFLOW_REF"
+          echo "CLEAN_REF=$CLEAN_REF"
           echo "repository=$REPO_PATH" >> "$GITHUB_OUTPUT"
           echo "ref=$CLEAN_REF" >> "$GITHUB_OUTPUT"
 
