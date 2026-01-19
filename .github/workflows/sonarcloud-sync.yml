@@ -60,11 +60,11 @@ jobs:
           echo "ref=$CLEAN_REF" >> "$GITHUB_OUTPUT"
 
       - name: Checkout sync tool repository
-        uses: actions/checkout@v4
-        with:
-          repository: Gorton218/sonarqube-to-github-issue-sync
-          ref: ${{ github.workflow_sha }}
-          path: sync-tool
+        uses: actions/checkout@v6
+        # with:
+        #   repository: Gorton218/sonarqube-to-github-issue-sync
+        #   ref: ${{ github.workflow_sha }}
+        #   path: sync-tool
 
       - name: Setup Python
         uses: actions/setup-python@v5
