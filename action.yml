@@ -85,4 +85,11 @@ runs:
         
         echo "Running: ${CMD[*]}"
         "${CMD[@]}"
-        echo "status=success" >> "$GITHUB_OUTPUT"
+        exit_code=$?
+        
+        if [ "$exit_code" -eq 0 ]; then
+          echo "status=success" >> "$GITHUB_OUTPUT"
+        else
+          echo "status=failure" >> "$GITHUB_OUTPUT"
+          exit "$exit_code"
+        fi

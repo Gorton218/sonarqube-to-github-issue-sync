@@ -148,8 +148,10 @@ Composite actions pass secrets via environment variables. The action supports tw
 ```yaml
 name: SonarCloud Sync
 
-on:s
+on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Mondays
 
 jobs:
   sync:
@@ -171,6 +173,8 @@ jobs:
 
 ### Example Usage: With Custom GitHub Token
 
+If you need to use a custom GitHub token (PAT, bot token, etc.) for cross-repo access or elevated permissions:
+
 ```yaml
 - uses: Gorton218/sonarqube-to-github-issue-sync@main
   env:
@@ -180,10 +184,27 @@ jobs:
     sonar_project: my-org_my-project
 ```
 
-Notes:
-- The action auto-discovers the target repository using `github.repository`, so no `github_repo` input is needed.
-- The calling job must have `permissions: { issues: write }` to allow issue creation/updates.
-- Use a tagged ref (e.g., `@v1`) for stable releases; use `@main` for the latest development version.
+### Example Usage: With Dry Run
+
+Preview changes before applying them:
+
+```yaml
+- uses: Gorton218/sonarqube-to-github-issue-sync@main
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  with:
+    sonar_project: my-org_my-project
+    dry_run: true
+    debug: true
+```
+
+### Action Notes
+
+- **Repository Auto-Discovery**: The action automatically uses `github.repository`, so no `github_repo` input is needed.
+- **Permissions**: The calling job must have `permissions: { issues: write }` to allow issue creation/updates.
+- **Versioning**: Use a tagged ref (e.g., `@v1`) for stable releases; use `@main` for the latest development version.
+- **Token Default**: If `GITHUB_TOKEN` is not provided in `env`, the action defaults to `github.token` from workflow permissions.
+- **Scheduling**: Consider running the sync on a schedule (e.g., weekly) to keep issues in sync automatically.
 
 ### Debug and Logging Options
 
