@@ -26,6 +26,13 @@ inputs:
     description: "Python version to use"
     required: false
     default: "3.11"
+  sonar_token:
+    description: "SonarCloud token for authentication"
+    required: true
+  github_token:
+    description: "GitHub token for authentication"
+    required: false
+    default: "${{ github.token }}"
 
 outputs:
   sync_status:
@@ -35,12 +42,6 @@ outputs:
 runs:
   using: composite
   steps:
-    # - name: Checkout sonarcloud-sync repository
-    #   uses: actions/checkout@v4
-    #   with:
-    #     repository: Gorton218/sonarqube-to-github-issue-sync
-    #     path: sonarcloud-sync-tool
-
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
@@ -67,8 +68,8 @@ runs:
       id: sync
       shell: bash
       env:
-        # SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ github.token }}
+        SONAR_TOKEN: ${{ inputs.sonar_token }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
         set -euo pipefail
         CMD=(sonarcloud-github-sync \
