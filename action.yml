@@ -38,7 +38,7 @@ runs:
     - name: Checkout sonarcloud-sync repository
       uses: actions/checkout@v4
       with:
-        repository: Gorton218/sonarqube-to-github-issue-sync
+        # repository: Gorton218/sonarqube-to-github-issue-sync
         path: sonarcloud-sync-tool
 
     - name: Setup Python
@@ -66,8 +66,7 @@ runs:
       id: sync
       shell: bash
       env:
-        SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN || github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
       run: |
         CMD=(sonarcloud-github-sync \
           --sonar-project "${{ inputs.sonar_project }}" \
