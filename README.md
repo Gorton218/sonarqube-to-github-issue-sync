@@ -128,10 +128,12 @@ You can run the sync from other repositories using this GitHub Action.
 
 ### Action Secrets
 
-| Secret | Required | Description |
-|--------|----------|-------------|
-| `sonar_token` | yes | SonarCloud personal access token |
-| `github_token` | no | GitHub token with `issues:write` permission; defaults to `${{ github.token }}` if not provided |
+Composite actions don't support a dedicated `secrets` input. Instead, pass secrets via environment variables:
+
+| Environment Variable | Required | Description |
+|----------------------|----------|-------------|
+| `SONAR_TOKEN` | yes | SonarCloud personal access token |
+| `GITHUB_TOKEN` | no | GitHub token with `issues:write` permission; defaults to `${{ github.token }}` if not provided |
 
 ### Example Usage From Another Repository
 
@@ -149,15 +151,15 @@ jobs:
       contents: read
     steps:
       - uses: Gorton218/sonarqube-to-github-issue-sync@main
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           sonar_project: my-org_my-project
           issue_types: BUG,VULNERABILITY,CODE_SMELL
           dry_run: false
           log_level: INFO
           debug: false
-        secrets:
-          sonar_token: ${{ secrets.SONAR_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Notes:

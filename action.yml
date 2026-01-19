@@ -27,14 +27,6 @@ inputs:
     required: false
     default: "3.11"
 
-secrets:
-  sonar_token:
-    description: "SonarCloud personal access token"
-    required: true
-  github_token:
-    description: "GitHub token with issues:write permission"
-    required: false
-
 outputs:
   sync_status:
     description: "Sync operation status"
@@ -74,8 +66,8 @@ runs:
       id: sync
       shell: bash
       env:
-        SONAR_TOKEN: ${{ secrets.sonar_token }}
-        GITHUB_TOKEN: ${{ secrets.github_token || github.token }}
+        SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+        # GITHUB_TOKEN: ${{ env.GITHUB_TOKEN || github.token }}
       run: |
         CMD=(sonarcloud-github-sync \
           --sonar-project "${{ inputs.sonar_project }}" \
