@@ -42,7 +42,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      metadata: read
     steps:
       - name: Checkout sync tool repository
         uses: actions/checkout@v4
