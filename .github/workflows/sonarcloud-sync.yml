@@ -66,6 +66,8 @@ jobs:
         shell: bash
         working-directory: sync-tool
         run: |
+          ls -l
+          pwd
           pip install --upgrade pip
           pip install .
 
