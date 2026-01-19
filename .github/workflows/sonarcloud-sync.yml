@@ -51,8 +51,6 @@ jobs:
           WORKFLOW_REF="${{ github.workflow_ref }}"
           REPO_PATH="${WORKFLOW_REF%%/.github/*}"
           REF_PART="${WORKFLOW_REF##*@}"
-          echo action_repo: ${{ github.action_repository }}
-          echo action_ref: ${{ github.action_ref }}
           # Trim refs/heads/ or refs/tags/
           CLEAN_REF="${REF_PART#refs/heads/}"
           CLEAN_REF="${CLEAN_REF#refs/tags/}"
@@ -62,8 +60,8 @@ jobs:
       - name: Checkout sync tool repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ github.action_repository }}
-          ref: ${{ github.action_ref }}
+          repository: Gorton218/sonarqube-to-github-issue-sync
+          ref: ${{ github.workflow_sha }}
           path: sync-tool
 
       - name: Setup Python
