@@ -57,8 +57,9 @@ runs:
 
     - name: Install sonarcloud-sync
       shell: bash
-      working-directory: sonarcloud-sync-tool
+      working-directory: ${{ github.action_path }}
       run: |
+        set -euo pipefail
         python -m pip install --upgrade pip
         pip install .
 
@@ -69,6 +70,7 @@ runs:
         # SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
+        set -euo pipefail
         CMD=(sonarcloud-github-sync \
           --sonar-project "${{ inputs.sonar_project }}" \
           --github-repo "${{ github.repository }}" \
