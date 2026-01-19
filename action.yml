@@ -1,0 +1,96 @@
+name: "SonarCloud ↔ GitHub Sync"
+description: "Synchronize issues bidirectionally between SonarCloud and GitHub"
+author: "Gorton218"
+
+inputs:
+  sonar_project:
+    description: "SonarCloud project key (e.g., 'my-org_my-project')"
+    required: true
+  issue_types:
+    description: "Comma-separated list of issue types to sync"
+    required: false
+    default: "BUG,VULNERABILITY,CODE_SMELL"
+  dry_run:
+    description: "Preview changes without making modifications"
+    required: false
+    default: "false"
+  log_level:
+    description: "Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    required: false
+    default: "INFO"
+  debug:
+    description: "Enable debug logging"
+    required: false
+    default: "false"
+  python_version:
+    description: "Python version to use"
+    required: false
+    default: "3.11"
+
+secrets:
+  sonar_token:
+    description: "SonarCloud personal access token"
+    required: true
+  github_token:
+    description: "GitHub token with issues:write permission"
+    required: false
+
+outputs:
+  sync_status:
+    description: "Sync operation status"
+    value: ${{ steps.sync.outputs.status }}
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout sonarcloud-sync repository
+      uses: actions/checkout@v4
+      with:
+        repository: Gorton218/sonarqube-to-github-issue-sync
+        path: sonarcloud-sync-tool
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python_version }}
+
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ inputs.python_version }}-${{ hashFiles('sonarcloud-sync-tool/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ inputs.python_version }}-
+          ${{ runner.os }}-pip-
+
+    - name: Install sonarcloud-sync
+      shell: bash
+      working-directory: sonarcloud-sync-tool
+      run: |
+        python -m pip install --upgrade pip
+        pip install .
+
+    - name: Run sync
+      id: sync
+      shell: bash
+      env:
+        SONAR_TOKEN: ${{ secrets.sonar_token }}
+        GITHUB_TOKEN: ${{ secrets.github_token || github.token }}
+      run: |
+        CMD=(sonarcloud-github-sync \
+          --sonar-project "${{ inputs.sonar_project }}" \
+          --github-repo "${{ github.repository }}" \
+          --issue-types "${{ inputs.issue_types }}" \
+          --log-level "${{ inputs.log_level }}")
+        
+        if [ "${{ inputs.dry_run }}" = "true" ]; then
+          CMD+=(--dry-run)
+        fi
+        
+        if [ "${{ inputs.debug }}" = "true" ]; then
+          CMD+=(--debug)
+        fi
+        
+        echo "Running: ${CMD[*]}"
+        "${CMD[@]}"
+        echo "status=success" >> "$GITHUB_OUTPUT"

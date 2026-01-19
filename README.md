@@ -111,58 +111,59 @@ sonarcloud-github-sync \
 - `--log-level`: Set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) - default: INFO
 - `--help`: Show help message
 
-## Reusable GitHub Workflow
+## GitHub Action
 
-You can run the sync from other repositories via a reusable workflow hosted in this repo.
+You can run the sync from other repositories using this GitHub Action.
 
-### Workflow Interface
+### Action Inputs
 
-- Inputs:
-   - `sonar_project` (required): SonarCloud project key, e.g. `my-org_my-project`
-   - `issue_types` (optional): `BUG,VULNERABILITY,CODE_SMELL` by default
-   - `dry_run` (optional): `false` by default
-   - `log_level` (optional): `INFO` by default
-   - `debug` (optional): `false` by default
-- Secrets:
-   - `SONAR_TOKEN` (required)
-   - `GITHUB_TOKEN` (required; can use `${{ secrets.GITHUB_TOKEN }}` if permissions allow)
-- Permissions (required on the calling job):
-   - `contents: read` (for checkout)
-   - `issues: write` (create/close issues)
-   - `metadata: read` (repo access)
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `sonar_project` | yes | — | SonarCloud project key (e.g., `my-org_my-project`) |
+| `issue_types` | no | `BUG,VULNERABILITY,CODE_SMELL` | Comma-separated list of issue types to sync |
+| `dry_run` | no | `false` | Preview changes without making modifications |
+| `log_level` | no | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| `debug` | no | `false` | Enable debug logging |
+| `python_version` | no | `3.11` | Python version to use |
 
-The GitHub repository is auto-discovered from the calling context using `GITHUB_REPOSITORY`, so no `github_repo` input is needed.
+### Action Secrets
 
-### Example Usage From Another Repo
+| Secret | Required | Description |
+|--------|----------|-------------|
+| `sonar_token` | yes | SonarCloud personal access token |
+| `github_token` | no | GitHub token with `issues:write` permission; defaults to `${{ github.token }}` if not provided |
+
+### Example Usage From Another Repository
 
 ```yaml
 name: SonarCloud Sync
 
 on:
-   workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-   sonarcloud_sync:
-      uses: <owner>/<repo>/.github/workflows/sonarcloud-sync.yml@v1
-      permissions:
-         contents: read
-         issues: write
-         metadata: read
-      with:
-         sonar_project: my-org_my-project
-         issue_types: BUG,VULNERABILITY,CODE_SMELL
-         dry_run: false
-         log_level: INFO
-         debug: false
-      secrets:
-         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: Gorton218/sonarqube-to-github-issue-sync@main
+        with:
+          sonar_project: my-org_my-project
+          issue_types: BUG,VULNERABILITY,CODE_SMELL
+          dry_run: false
+          log_level: INFO
+          debug: false
+        secrets:
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Notes:
-- Replace `<owner>/<repo>` with this repository path and a tagged ref like `@v1`.
-- If you use the built-in `secrets.GITHUB_TOKEN`, grant the job `issues: write` permission.
-- The workflow installs the tool directly from this repo/tag and invokes the CLI.
+- The action auto-discovers the target repository using `github.repository`, so no `github_repo` input is needed.
+- The calling job must have `permissions: { issues: write }` to allow issue creation/updates.
+- Use a tagged ref (e.g., `@v1`) for stable releases; use `@main` for the latest development version.
 
 ### Debug and Logging Options
 
