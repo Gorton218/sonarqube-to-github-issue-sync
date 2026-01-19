@@ -120,30 +120,32 @@ You can run the sync from other repositories using this GitHub Action.
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
 | `sonar_project` | yes | — | SonarCloud project key (e.g., `my-org_my-project`) |
+| `sonar_token` | yes | — | SonarCloud personal access token for authentication |
+| `github_token` | no | `${{ github.token }}` | GitHub token with `issues:write` permission; defaults to workflow token |
 | `issue_types` | no | `BUG,VULNERABILITY,CODE_SMELL` | Comma-separated list of issue types to sync |
 | `dry_run` | no | `false` | Preview changes without making modifications |
 | `log_level` | no | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
 | `debug` | no | `false` | Enable debug logging |
 | `python_version` | no | `3.11` | Python version to use |
 
-### Action Secrets
+### Authentication
 
-Composite actions pass secrets via environment variables. The action supports two approaches:
+The action requires two tokens for authentication:
 
-**Recommended: Workflow Permissions (no explicit secret needed)**
-- The action automatically uses `github.token` with workflow permissions
-- Simply grant `permissions: { issues: write }` in the calling job
+**SonarCloud Token (`sonar_token`)**
+- Required for accessing SonarCloud API
+- Passed as an action input parameter
+- Should be stored as a repository secret
 
-**Alternative: Explicit GitHub Token**
-- Pass `GITHUB_TOKEN` via env if you need a custom token (PAT, bot token, etc.)
-- Useful for cross-repo access or elevated permissions
+**GitHub Token (`github_token`)**
+- Required for creating and managing GitHub issues
+- Defaults to the automatic `github.token` with workflow permissions
+- Can be overridden with a custom token (PAT, bot token, etc.) for cross-repo access or elevated permissions
 
-| Environment Variable | Required | Default | Description |
-|----------------------|----------|---------|-------------|
-| `SONAR_TOKEN` | yes | — | SonarCloud personal access token |
-| `GITHUB_TOKEN` | no | `github.token` | GitHub token with `issues:write` permission; defaults to workflow token |
+**Recommended Approach:**
+Use the default `github.token` by granting `permissions: { issues: write }` in your workflow job. This eliminates the need to create and manage a separate GitHub token.
 
-### Example Usage: With Workflow Permissions (Recommended)
+### Example Usage: Basic (Recommended)
 
 ```yaml
 name: SonarCloud Sync
@@ -161,10 +163,9 @@ jobs:
       contents: read
     steps:
       - uses: Gorton218/sonarqube-to-github-issue-sync@main
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           sonar_project: my-org_my-project
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
           issue_types: BUG,VULNERABILITY,CODE_SMELL
           dry_run: false
           log_level: INFO
@@ -177,11 +178,10 @@ If you need to use a custom GitHub token (PAT, bot token, etc.) for cross-repo a
 
 ```yaml
 - uses: Gorton218/sonarqube-to-github-issue-sync@main
-  env:
-    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
   with:
     sonar_project: my-org_my-project
+    sonar_token: ${{ secrets.SONAR_TOKEN }}
+    github_token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 ```
 
 ### Example Usage: With Dry Run
@@ -190,10 +190,9 @@ Preview changes before applying them:
 
 ```yaml
 - uses: Gorton218/sonarqube-to-github-issue-sync@main
-  env:
-    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   with:
     sonar_project: my-org_my-project
+    sonar_token: ${{ secrets.SONAR_TOKEN }}
     dry_run: true
     debug: true
 ```
