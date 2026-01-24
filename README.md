@@ -145,7 +145,7 @@ The action requires two tokens for authentication:
 **Recommended Approach:**
 Use the default `github.token` by granting `permissions: { issues: write }` in your workflow job. This eliminates the need to create and manage a separate GitHub token.
 
-### Example Usage: Basic (Recommended)
+### Example Usage: Basic (Cron)
 
 ```yaml
 name: SonarCloud Sync
@@ -202,7 +202,6 @@ Preview changes before applying them:
 - **Repository Auto-Discovery**: The action automatically uses `github.repository`, so no `github_repo` input is needed.
 - **Permissions**: The calling job must have `permissions: { issues: write }` to allow issue creation/updates.
 - **Versioning**: Use a tagged ref (e.g., `@v1`) for stable releases; use `@main` for the latest development version.
-- **Token Default**: If `GITHUB_TOKEN` is not provided in `env`, the action defaults to `github.token` from workflow permissions.
 - **Scheduling**: Consider running the sync on a schedule (e.g., weekly) to keep issues in sync automatically.
 
 ### Debug and Logging Options

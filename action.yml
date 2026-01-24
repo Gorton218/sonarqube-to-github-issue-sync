@@ -51,7 +51,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ inputs.python_version }}-${{ hashFiles('sonarcloud-sync-tool/pyproject.toml') }}
+        key: ${{ runner.os }}-pip-${{ inputs.python_version }}-${{ hashFiles(format('{0}/pyproject.toml', github.action_path)) }}
         restore-keys: |
           ${{ runner.os }}-pip-${{ inputs.python_version }}-
           ${{ runner.os }}-pip-
