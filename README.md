@@ -111,58 +111,98 @@ sonarcloud-github-sync \
 - `--log-level`: Set logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) - default: INFO
 - `--help`: Show help message
 
-## Reusable GitHub Workflow
+## GitHub Action
 
-You can run the sync from other repositories via a reusable workflow hosted in this repo.
+You can run the sync from other repositories using this GitHub Action.
 
-### Workflow Interface
+### Action Inputs
 
-- Inputs:
-   - `sonar_project` (required): SonarCloud project key, e.g. `my-org_my-project`
-   - `issue_types` (optional): `BUG,VULNERABILITY,CODE_SMELL` by default
-   - `dry_run` (optional): `false` by default
-   - `log_level` (optional): `INFO` by default
-   - `debug` (optional): `false` by default
-- Secrets:
-   - `SONAR_TOKEN` (required)
-   - `GITHUB_TOKEN` (required; can use `${{ secrets.GITHUB_TOKEN }}` if permissions allow)
-- Permissions (required on the calling job):
-   - `contents: read` (for checkout)
-   - `issues: write` (create/close issues)
-   - `metadata: read` (repo access)
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `sonar_project` | yes | — | SonarCloud project key (e.g., `my-org_my-project`) |
+| `sonar_token` | yes | — | SonarCloud personal access token for authentication |
+| `github_token` | no | `${{ github.token }}` | GitHub token with `issues:write` permission; defaults to workflow token |
+| `issue_types` | no | `BUG,VULNERABILITY,CODE_SMELL` | Comma-separated list of issue types to sync |
+| `dry_run` | no | `false` | Preview changes without making modifications |
+| `log_level` | no | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| `debug` | no | `false` | Enable debug logging |
+| `python_version` | no | `3.11` | Python version to use |
 
-The GitHub repository is auto-discovered from the calling context using `GITHUB_REPOSITORY`, so no `github_repo` input is needed.
+### Authentication
 
-### Example Usage From Another Repo
+The action requires two tokens for authentication:
+
+**SonarCloud Token (`sonar_token`)**
+- Required for accessing SonarCloud API
+- Passed as an action input parameter
+- Should be stored as a repository secret
+
+**GitHub Token (`github_token`)**
+- Required for creating and managing GitHub issues
+- Defaults to the automatic `github.token` with workflow permissions
+- Can be overridden with a custom token (PAT, bot token, etc.) for cross-repo access or elevated permissions
+
+**Recommended Approach:**
+Use the default `github.token` by granting `permissions: { issues: write }` in your workflow job. This eliminates the need to create and manage a separate GitHub token.
+
+### Example Usage: Basic (Cron)
 
 ```yaml
 name: SonarCloud Sync
 
 on:
-   workflow_dispatch:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'  # Weekly on Mondays
 
 jobs:
-   sonarcloud_sync:
-      uses: <owner>/<repo>/.github/workflows/sonarcloud-sync.yml@v1
-      permissions:
-         contents: read
-         issues: write
-         metadata: read
-      with:
-         sonar_project: my-org_my-project
-         issue_types: BUG,VULNERABILITY,CODE_SMELL
-         dry_run: false
-         log_level: INFO
-         debug: false
-      secrets:
-         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+    steps:
+      - uses: Gorton218/sonarqube-to-github-issue-sync@main
+        with:
+          sonar_project: my-org_my-project
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          issue_types: BUG,VULNERABILITY,CODE_SMELL
+          dry_run: false
+          log_level: INFO
+          debug: false
 ```
 
-Notes:
-- Replace `<owner>/<repo>` with this repository path and a tagged ref like `@v1`.
-- If you use the built-in `secrets.GITHUB_TOKEN`, grant the job `issues: write` permission.
-- The workflow installs the tool directly from this repo/tag and invokes the CLI.
+### Example Usage: With Custom GitHub Token
+
+If you need to use a custom GitHub token (PAT, bot token, etc.) for cross-repo access or elevated permissions:
+
+```yaml
+- uses: Gorton218/sonarqube-to-github-issue-sync@main
+  with:
+    sonar_project: my-org_my-project
+    sonar_token: ${{ secrets.SONAR_TOKEN }}
+    github_token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
+```
+
+### Example Usage: With Dry Run
+
+Preview changes before applying them:
+
+```yaml
+- uses: Gorton218/sonarqube-to-github-issue-sync@main
+  with:
+    sonar_project: my-org_my-project
+    sonar_token: ${{ secrets.SONAR_TOKEN }}
+    dry_run: true
+    debug: true
+```
+
+### Action Notes
+
+- **Repository Auto-Discovery**: The action automatically uses `github.repository`, so no `github_repo` input is needed.
+- **Permissions**: The calling job must have `permissions: { issues: write }` to allow issue creation/updates.
+- **Versioning**: Use a tagged ref (e.g., `@v1`) for stable releases; use `@main` for the latest development version.
+- **Scheduling**: Consider running the sync on a schedule (e.g., weekly) to keep issues in sync automatically.
 
 ### Debug and Logging Options
 
